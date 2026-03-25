@@ -1,17 +1,46 @@
-// This is the "Waliya Voice" engine
-function callBingoNumber(letter, number) {
-    const amharicNumbers = {
-        1: "አንድ", 2: "ሁለት", 3: "ሶስት", 4: "አራት", 5: "አምስት",
-        10: "አስር", 20: "ሀያ", 30: "ሰላሳ", 40: "አርባ", 50: "ሀምሳ",
-        60: "ስልሳ", 70: "ሰባ", 80: "ሰማንያ", 90: "ዘጠና"
-    };
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Waliya Bingo</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body { background: #1a0633; color: white; font-family: sans-serif; text-align: center; margin: 0; padding: 20px; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .bingo-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-top: 15px; }
+        .cell { background: rgba(255, 255, 255, 0.1); height: 45px; display: flex; align-items: center; justify-content: center; border-radius: 5px; font-weight: bold; }
+        .cell.marked { background: #4caf50; color: white; box-shadow: 0 0 10px #4caf50; }
+        #ball-display { font-size: 60px; color: #ffd700; font-weight: 900; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <div id="ball-display">🦅</div>
+    <div class="glass-card">
+        <h3>Card #<span id="card-id">--</span></h3>
+        <div class="bingo-grid" id="grid"></div>
+    </div>
 
-    const utter = new SpeechSynthesisUtterance();
-    utter.lang = 'am-ET'; // Amharic
-    
-    // The bot calls the Letter in English, then the Number in Amharic
-    utter.text = `${letter}... ${amharicNumbers[number] || number}`;
-    utter.rate = 0.8; // Slow and clear
-    
-    window.speechSynthesis.speak(utter);
-}
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+
+        function callAmharic(letter, number) {
+            const amharicNums = {10: "አስር", 20: "ሀያ", 30: "ሰላሳ", 40: "አርባ", 50: "ሀምሳ"};
+            const msg = new SpeechSynthesisUtterance();
+            msg.lang = 'am-ET';
+            msg.text = `${letter}... ${amharicNums[number] || number}`;
+            window.speechSynthesis.speak(msg);
+        }
+
+        // Add auto-marking listener here when you start the live game
+    </script>
+</body>
+</html>
