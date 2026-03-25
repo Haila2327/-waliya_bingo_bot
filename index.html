@@ -3,53 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Waliya Bingo Elite</title>
+    <title>Waliya Bingo</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root { --bg: #130326; --panel: #1e0b3d; --gold: #fbc02d; --glass: rgba(255,255,255,0.05); }
-        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; }
+        :root { --bg: #120322; --card: #220a45; --gold: #fbc02d; }
+        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         
-        /* TOP NAV */
-        .nav { background: var(--panel); padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,215,0,0.2); }
-        .bal-box { display: flex; flex-direction: column; }
-        .bal-amt { color: var(--gold); font-weight: 900; font-size: 1.2rem; }
+        .header { background: #1e0b3d; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(251, 192, 45, 0.3); }
+        .bal-val { color: var(--gold); font-weight: 900; font-size: 1.1rem; }
         
-        /* PRIZE BANNER */
-        .prize-bar { background: linear-gradient(90deg, #fbc02d, #f57f17); color: #130326; padding: 10px; text-align: center; font-weight: 900; font-size: 0.9rem; }
+        .prize-bar { background: linear-gradient(90deg, #fbc02d, #f57f17); color: #120322; text-align: center; padding: 8px; font-weight: 800; font-size: 0.85rem; }
         
-        /* HISTORY ROW */
-        .history { display: flex; gap: 8px; padding: 10px; overflow-x: auto; background: rgba(0,0,0,0.3); min-height: 45px; align-items: center; }
-        .ball { min-width: 35px; height: 35px; background: white; color: black; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.8rem; box-shadow: 0 0 10px var(--gold); }
+        .history { display: flex; gap: 10px; padding: 10px; background: rgba(0,0,0,0.4); overflow-x: auto; min-height: 40px; align-items: center; }
+        .ball { min-width: 32px; height: 32px; background: white; color: black; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.8rem; box-shadow: 0 0 8px var(--gold); }
 
-        /* GRID 1-400 */
-        .container { padding: 15px; height: 60vh; overflow-y: auto; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-        .card { background: var(--panel); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 15px 0; text-align: center; font-weight: 800; transition: 0.2s; }
-        .card.selected { border-color: var(--gold); background: rgba(251, 192, 45, 0.2); color: var(--gold); transform: scale(1.05); }
+        .grid { flex-grow: 1; padding: 15px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; overflow-y: auto; margin-bottom: 80px; }
+        .card-item { background: var(--card); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 18px 0; text-align: center; font-weight: 800; transition: 0.2s; }
+        .card-item.selected { border-color: var(--gold); background: rgba(251, 192, 45, 0.15); color: var(--gold); box-shadow: 0 0 15px rgba(251, 192, 45, 0.2); }
 
-        /* PLAY BUTTON */
-        .footer { position: fixed; bottom: 0; width: 100%; padding: 20px; box-sizing: border-box; background: linear-gradient(to top, var(--bg), transparent); }
-        .btn { background: var(--gold); color: black; border: none; width: 100%; padding: 18px; border-radius: 15px; font-weight: 900; font-size: 1.1rem; box-shadow: 0 5px 20px rgba(0,0,0,0.5); }
+        .footer { position: fixed; bottom: 0; width: 100%; padding: 20px; background: linear-gradient(to top, var(--bg), transparent); box-sizing: border-box; }
+        .buy-btn { background: var(--gold); color: black; border: none; width: 100%; padding: 18px; border-radius: 15px; font-weight: 900; font-size: 1.1rem; text-transform: uppercase; }
     </style>
 </head>
 <body>
-    <div class="nav">
-        <div class="bal-box">
-            <span style="font-size: 0.7rem; opacity: 0.6;">WALLET BALANCE</span>
-            <span class="bal-amt" id="balance">0.00 ETB</span>
-        </div>
+    <div class="header">
+        <div><span style="opacity: 0.6; font-size: 0.7rem;">WALLET BALANCE</span><br><span class="bal-val" id="balText">0.00 ETB</span></div>
         <div style="font-size: 1.5rem;">🦅</div>
     </div>
+    <div class="prize-bar">🏆 CURRENT PRIZE POOL: <span id="poolText">0.00</span> ETB</div>
+    <div class="history" id="ballHistory"><span style="font-size: 0.7rem; opacity: 0.5;">WAITING FOR NEXT ROUND...</span></div>
 
-    <div class="prize-bar">🏆 ESTIMATED PRIZE: <span id="pot">0.00</span> ETB</div>
-
-    <div class="history" id="history">
-        <div style="opacity: 0.5; font-size: 0.7rem;">WAITING FOR NEXT ROUND...</div>
-    </div>
-
-    <div class="container" id="grid"></div>
+    <div class="grid" id="mainGrid"></div>
 
     <div class="footer">
-        <button class="btn" id="playBtn" onclick="buyTickets()">BUY TICKETS (0 ETB)</button>
+        <button class="buy-btn" id="mainBtn" onclick="confirmPurchase()">BUY TICKETS (0 ETB)</button>
     </div>
 
     <script>
@@ -57,26 +44,27 @@
         let selected = [];
         const PRICE = 5;
 
-        // Build 1-400
-        const grid = document.getElementById('grid');
-        for(let i=1; i<=400; i++){
-            const d = document.createElement('div');
-            d.className = 'card';
-            d.innerText = i;
-            d.onclick = () => {
+        // Populate 1-400
+        const grid = document.getElementById('mainGrid');
+        for(let i=1; i<=400; i++) {
+            const el = document.createElement('div');
+            el.className = 'card-item';
+            el.innerText = i;
+            el.onclick = () => {
                 if(selected.includes(i)) {
                     selected = selected.filter(x => x !== i);
-                    d.classList.remove('selected');
+                    el.classList.remove('selected');
                 } else if(selected.length < 3) {
                     selected.push(i);
-                    d.classList.add('selected');
+                    el.classList.add('selected');
+                    tg.HapticFeedback.impactOccurred('medium');
                 }
-                document.getElementById('playBtn').innerText = `BUY TICKETS (${selected.length * PRICE} ETB)`;
+                document.getElementById('mainBtn').innerText = `BUY TICKETS (${selected.length * PRICE} ETB)`;
             };
-            grid.appendChild(d);
+            grid.appendChild(el);
         }
 
-        function buyTickets() {
+        function confirmPurchase() {
             if(selected.length === 0) return;
             tg.sendData(JSON.stringify({action: "join", cards: selected}));
             tg.close();
