@@ -1,46 +1,81 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Waliya Bingo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Waliya Bingo Elite</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { background: #1a0633; color: white; font-family: sans-serif; text-align: center; margin: 0; padding: 20px; }
-        .glass-card {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 20px;
-            padding: 20px;
-            margin-top: 20px;
-        }
-        .bingo-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-top: 15px; }
-        .cell { background: rgba(255, 255, 255, 0.1); height: 45px; display: flex; align-items: center; justify-content: center; border-radius: 5px; font-weight: bold; }
-        .cell.marked { background: #4caf50; color: white; box-shadow: 0 0 10px #4caf50; }
-        #ball-display { font-size: 60px; color: #ffd700; font-weight: 900; margin-bottom: 10px; }
+        :root { --gold: #ffd700; --purple: #1a0633; --glass: rgba(255, 255, 255, 0.1); }
+        body { background: var(--purple); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; overflow: hidden; }
+        .container { padding: 15px; height: 100vh; display: flex; flex-direction: column; }
+        .glass-panel { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.15); border-radius: 25px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        
+        /* 1-400 Grid */
+        .card-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; flex-grow: 1; overflow-y: auto; background: rgba(0,0,0,0.2); border-radius: 15px; padding: 10px; margin: 15px 0; border: 1px solid rgba(255,215,0,0.1); }
+        .card-item { background: var(--glass); padding: 15px 0; border-radius: 12px; font-weight: bold; border: 1px solid transparent; text-align: center; transition: 0.2s; }
+        .card-item.selected { border-color: var(--gold); background: rgba(255,215,0,0.2); color: var(--gold); transform: scale(1.05); }
+
+        /* Arena Display */
+        #ball-call { font-size: 5rem; font-weight: 900; color: var(--gold); text-shadow: 0 0 20px var(--gold); margin: 20px 0; text-align: center; }
+        .btn-gold { background: linear-gradient(90deg, var(--gold), #ffa000); color: black; border: none; padding: 18px; width: 100%; border-radius: 15px; font-weight: 900; font-size: 1.1rem; text-transform: uppercase; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
-    <div id="ball-display">🦅</div>
-    <div class="glass-card">
-        <h3>Card #<span id="card-id">--</span></h3>
-        <div class="bingo-grid" id="grid"></div>
+    <div class="container">
+        <div id="lobby" class="glass-panel" style="height: 90%;">
+            <h1 style="color: var(--gold); margin: 0; text-align: center;">WALIYA ARENA</h1>
+            <p style="text-align: center; opacity: 0.8;">Select your lucky cards (1-400)</p>
+            <div class="card-grid" id="cardSelector"></div>
+            <button class="btn-gold" onclick="enterArena()">ENTER GAME</button>
+        </div>
+
+        <div id="arena" class="glass-panel hidden" style="text-align: center;">
+            <div id="status" style="color: var(--gold); letter-spacing: 2px;">LIVE DRAW</div>
+            <div id="ball-call">--</div>
+            <p>Wait for the Amharic call...</p>
+        </div>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
+        let selected = [];
 
-        function callAmharic(letter, number) {
-            const amharicNums = {10: "አስር", 20: "ሀያ", 30: "ሰላሳ", 40: "አርባ", 50: "ሀምሳ"};
-            const msg = new SpeechSynthesisUtterance();
-            msg.lang = 'am-ET';
-            msg.text = `${letter}... ${amharicNums[number] || number}`;
-            window.speechSynthesis.speak(msg);
+        // Generate 1-400 Grid
+        const selector = document.getElementById('cardSelector');
+        for(let i=1; i<=400; i++){
+            const div = document.createElement('div');
+            div.className = 'card-item';
+            div.innerText = i;
+            div.onclick = () => {
+                if(selected.includes(i)) {
+                    selected = selected.filter(c => c !== i);
+                    div.classList.remove('selected');
+                } else if(selected.length < 3) {
+                    selected.push(i);
+                    div.classList.add('selected');
+                }
+            };
+            selector.appendChild(div);
         }
 
-        // Add auto-marking listener here when you start the live game
+        function enterArena() {
+            if(selected.length === 0) return alert("Select at least 1 card!");
+            tg.sendData(JSON.stringify({action: "join", cards: selected}));
+            document.getElementById('lobby').classList.add('hidden');
+            document.getElementById('arena').classList.remove('hidden');
+        }
+
+        // AMHARIC VOICE ENGINE
+        function playCall(letter, number) {
+            const am = {10:"አስር", 20:"ሀያ", 30:"ሰላሳ", 40:"አርባ", 50:"ሀምሳ", 60:"ስልሳ", 70:"ሰባ", 80:"ሰማንያ", 90:"ዘጠና"};
+            const utt = new SpeechSynthesisUtterance(`${letter}... ${am[number] || number}`);
+            utt.lang = 'am-ET';
+            utt.rate = 0.8;
+            window.speechSynthesis.speak(utt);
+        }
     </script>
 </body>
 </html>
