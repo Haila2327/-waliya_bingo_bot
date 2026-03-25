@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { background: #1a0633; color: white; font-family: 'Arial', sans-serif; text-align: center; }
+        
+        /* Glassmorphism Card Style */
+        .bingo-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 15px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+        }
+
+        .cell.marked { 
+            background: #4caf50 !important; 
+            box-shadow: 0 0 10px #4caf50; 
+        }
+
+        #call-display { font-size: 50px; color: #ffd700; text-shadow: 0 0 20px #ffd700; }
+    </style>
+</head>
+<body>
+    <div id="call-display">🦅</div>
+    <div class="bingo-card" id="card-area"></div>
+
+    <script>
+        // AMHARIC VOICE CALLER
+        function announceNumber(letter, number) {
+            const amharicValues = { 10: "አስር", 20: "ሀያ", 30: "ሰላሳ", 40: "አርባ", 50: "ሀምሳ" };
+            const synth = window.speechSynthesis;
+            
+            // Call Letter
+            const letterUtter = new SpeechSynthesisUtterance(letter);
+            synth.speak(letterUtter);
+
+            // Call Number in Amharic
+            setTimeout(() => {
+                const numUtter = new SpeechSynthesisUtterance(amharicValues[number] || number);
+                numUtter.lang = 'am-ET';
+                synth.speak(numUtter);
+            }, 800);
+        }
+    </script>
+</body>
+</html>
