@@ -3,293 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Waliya Bingo</title>
+    <title>Waliya Bingo Elite</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap');
+        :root { --bg: #130326; --panel: #1e0b3d; --gold: #fbc02d; --glass: rgba(255,255,255,0.05); }
+        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; }
         
-        :root {
-            --bg-dark: #120322;
-            --bg-light: #2c094d;
-            --gold: #fbc02d;
-            --gold-glow: rgba(251, 192, 45, 0.3);
-            --glass: rgba(255, 255, 255, 0.05);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --green-mark: #00c853;
-        }
+        /* TOP NAV */
+        .nav { background: var(--panel); padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,215,0,0.2); }
+        .bal-box { display: flex; flex-direction: column; }
+        .bal-amt { color: var(--gold); font-weight: 900; font-size: 1.2rem; }
+        
+        /* PRIZE BANNER */
+        .prize-bar { background: linear-gradient(90deg, #fbc02d, #f57f17); color: #130326; padding: 10px; text-align: center; font-weight: 900; font-size: 0.9rem; }
+        
+        /* HISTORY ROW */
+        .history { display: flex; gap: 8px; padding: 10px; overflow-x: auto; background: rgba(0,0,0,0.3); min-height: 45px; align-items: center; }
+        .ball { min-width: 35px; height: 35px; background: white; color: black; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.8rem; box-shadow: 0 0 10px var(--gold); }
 
-        body {
-            background: linear-gradient(160deg, var(--bg-dark) 0%, var(--bg-light) 100%);
-            color: white;
-            font-family: 'Inter', sans-serif;
-            margin: 0;
-            padding: 0;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
+        /* GRID 1-400 */
+        .container { padding: 15px; height: 60vh; overflow-y: auto; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        .card { background: var(--panel); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 15px 0; text-align: center; font-weight: 800; transition: 0.2s; }
+        .card.selected { border-color: var(--gold); background: rgba(251, 192, 45, 0.2); color: var(--gold); transform: scale(1.05); }
 
-        /* TOP NAVIGATION BAR */
-        .top-nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 20px;
-            background: rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--glass-border);
-        }
-        .user-info { display: flex; align-items: center; gap: 10px; }
-        .avatar { width: 40px; height: 40px; background: var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; color: var(--bg-dark); }
-        .balance-box { display: flex; flex-direction: column; }
-        .balance-label { font-size: 10px; color: #aaa; text-transform: uppercase; letter-spacing: 1px; }
-        .balance-amount { font-size: 16px; font-weight: 800; color: var(--gold); }
-        
-        .main-container { padding: 15px; flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; }
-
-        /* LOBBY SCREEN (1-400 Grid) */
-        .lobby-header { text-align: center; margin-bottom: 15px; }
-        .lobby-header h2 { margin: 0; font-size: 22px; font-weight: 800; text-transform: uppercase; }
-        .lobby-header p { margin: 5px 0 0 0; font-size: 13px; color: #ccc; }
-        
-        .grid-container {
-            flex-grow: 1;
-            background: rgba(0, 0, 0, 0.2);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            padding: 10px;
-            overflow-y: auto;
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
-            align-content: start;
-        }
-        
-        .card-btn {
-            background: var(--glass);
-            border: 1px solid var(--glass-border);
-            border-radius: 10px;
-            padding: 15px 0;
-            text-align: center;
-            font-weight: 700;
-            font-size: 16px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .card-btn.selected {
-            background: var(--gold-glow);
-            border-color: var(--gold);
-            color: var(--gold);
-            transform: scale(1.05);
-            box-shadow: 0 0 15px var(--gold-glow);
-        }
-
-        /* BOTTOM PLAY BUTTON */
-        .bottom-bar { padding: 15px; padding-bottom: 25px; }
-        .play-btn {
-            background: linear-gradient(90deg, #fbc02d, #f57f17);
-            color: #120322;
-            border: none;
-            width: 100%;
-            padding: 16px;
-            border-radius: 16px;
-            font-size: 18px;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            box-shadow: 0 5px 20px rgba(251, 192, 45, 0.4);
-            cursor: pointer;
-        }
-        .play-btn:disabled { background: #555; color: #888; box-shadow: none; cursor: not-allowed; }
-
-        /* LIVE GAME SCREEN */
-        .live-status { text-align: center; margin-bottom: 15px; }
-        .live-badge { display: inline-block; background: rgba(255,0,0,0.2); border: 1px solid red; color: #ff4d4d; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 800; letter-spacing: 1px; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(255, 0, 0, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); } }
-        
-        .called-ball { font-size: 55px; font-weight: 900; color: var(--gold); text-align: center; text-shadow: 0 0 30px var(--gold-glow); margin: 10px 0; }
-        
-        .bingo-card {
-            background: var(--glass);
-            backdrop-filter: blur(15px);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            padding: 15px;
-            margin-bottom: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-        .card-header { display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: 800; color: var(--gold); }
-        .bingo-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
-        .cell {
-            background: rgba(0,0,0,0.3);
-            aspect-ratio: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 8px;
-            font-size: 18px;
-            font-weight: 800;
-            border: 1px solid rgba(255,255,255,0.05);
-            transition: 0.3s;
-        }
-        .cell.marked {
-            background: var(--green-mark);
-            color: white;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.2), 0 0 15px rgba(0, 200, 83, 0.5);
-            border-color: #00e676;
-            transform: scale(0.95);
-        }
-        .cell.free { background: var(--gold); color: var(--bg-dark); }
-
-        .hidden { display: none !important; }
-        
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 10px; }
+        /* PLAY BUTTON */
+        .footer { position: fixed; bottom: 0; width: 100%; padding: 20px; box-sizing: border-box; background: linear-gradient(to top, var(--bg), transparent); }
+        .btn { background: var(--gold); color: black; border: none; width: 100%; padding: 18px; border-radius: 15px; font-weight: 900; font-size: 1.1rem; box-shadow: 0 5px 20px rgba(0,0,0,0.5); }
     </style>
 </head>
 <body>
-
-    <div class="top-nav">
-        <div class="user-info">
-            <div class="avatar" id="user-avatar">W</div>
-            <div class="balance-box">
-                <span class="balance-label">Wallet Balance</span>
-                <span class="balance-amount" id="user-balance">0.00 ETB</span>
-            </div>
+    <div class="nav">
+        <div class="bal-box">
+            <span style="font-size: 0.7rem; opacity: 0.6;">WALLET BALANCE</span>
+            <span class="bal-amt" id="balance">0.00 ETB</span>
         </div>
-        <div style="font-size: 20px; opacity: 0.7;">⚙️</div>
+        <div style="font-size: 1.5rem;">🦅</div>
     </div>
 
-    <div id="screen-lobby" class="main-container">
-        <div class="lobby-header">
-            <h2>Select Lucky Cards</h2>
-            <p>5 ETB per card (Max 3)</p>
-        </div>
-        <div class="grid-container" id="grid-400">
-            </div>
-    </div>
-    
-    <div id="bottom-lobby" class="bottom-bar">
-        <button class="play-btn" id="btn-play" disabled onclick="joinGame()">Play (0 ETB)</button>
+    <div class="prize-bar">🏆 ESTIMATED PRIZE: <span id="pot">0.00</span> ETB</div>
+
+    <div class="history" id="history">
+        <div style="opacity: 0.5; font-size: 0.7rem;">WAITING FOR NEXT ROUND...</div>
     </div>
 
-    <div id="screen-game" class="main-container hidden">
-        <div class="live-status">
-            <div class="live-badge">🔴 LIVE DRAW</div>
-        </div>
-        <div class="called-ball" id="current-ball">--</div>
-        
-        <div id="my-cards-container" style="overflow-y: auto; flex-grow: 1; padding-bottom: 20px;">
-            </div>
+    <div class="container" id="grid"></div>
+
+    <div class="footer">
+        <button class="btn" id="playBtn" onclick="buyTickets()">BUY TICKETS (0 ETB)</button>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
-        tg.expand();
-        
-        // Setup User Info from Telegram
-        if(tg.initDataUnsafe && tg.initDataUnsafe.user) {
-            const user = tg.initDataUnsafe.user;
-            document.getElementById('user-avatar').innerText = user.first_name.charAt(0).toUpperCase();
-        }
+        let selected = [];
+        const PRICE = 5;
 
-        let selectedCards = [];
-        const PRICE_PER_CARD = 5;
-
-        // 1. Build the 1-400 Grid
-        const grid400 = document.getElementById('grid-400');
-        const playBtn = document.getElementById('btn-play');
-
-        for(let i=1; i<=400; i++) {
-            const btn = document.createElement('div');
-            btn.className = 'card-btn';
-            btn.innerText = i;
-            btn.onclick = () => toggleCard(i, btn);
-            grid400.appendChild(btn);
-        }
-
-        function toggleCard(num, element) {
-            if(selectedCards.includes(num)) {
-                selectedCards = selectedCards.filter(c => c !== num);
-                element.classList.remove('selected');
-            } else {
-                if(selectedCards.length >= 3) {
-                    tg.HapticFeedback.notificationOccurred('warning');
-                    return;
+        // Build 1-400
+        const grid = document.getElementById('grid');
+        for(let i=1; i<=400; i++){
+            const d = document.createElement('div');
+            d.className = 'card';
+            d.innerText = i;
+            d.onclick = () => {
+                if(selected.includes(i)) {
+                    selected = selected.filter(x => x !== i);
+                    d.classList.remove('selected');
+                } else if(selected.length < 3) {
+                    selected.push(i);
+                    d.classList.add('selected');
                 }
-                selectedCards.push(num);
-                element.classList.add('selected');
-                tg.HapticFeedback.impactOccurred('light');
-            }
-            
-            // Update Play Button
-            const total = selectedCards.length * PRICE_PER_CARD;
-            if(selectedCards.length > 0) {
-                playBtn.disabled = false;
-                playBtn.innerText = `PLAY (${total} ETB)`;
-            } else {
-                playBtn.disabled = true;
-                playBtn.innerText = `PLAY (0 ETB)`;
-            }
+                document.getElementById('playBtn').innerText = `BUY TICKETS (${selected.length * PRICE} ETB)`;
+            };
+            grid.appendChild(d);
         }
 
-        // 2. Transition to Live Game
-        function joinGame() {
-            tg.HapticFeedback.impactOccurred('heavy');
-            
-            // Send data to Python Bot
-            tg.sendData(JSON.stringify({ action: "join_round", cards: selectedCards }));
-            
-            // Hide Lobby, Show Game
-            document.getElementById('screen-lobby').classList.add('hidden');
-            document.getElementById('bottom-lobby').classList.add('hidden');
-            document.getElementById('screen-game').classList.remove('hidden');
-            
-            renderLiveCards();
+        function buyTickets() {
+            if(selected.length === 0) return;
+            tg.sendData(JSON.stringify({action: "join", cards: selected}));
+            tg.close();
         }
-
-        // 3. Render the 5x5 Grid for selected cards
-        function renderLiveCards() {
-            const container = document.getElementById('my-cards-container');
-            container.innerHTML = '';
-            
-            selectedCards.forEach(cardId => {
-                const cardDiv = document.createElement('div');
-                cardDiv.className = 'bingo-card';
-                cardDiv.innerHTML = `
-                    <div class="card-header">
-                        <span>CARD #${cardId}</span>
-                        <span style="color:white; opacity:0.5;">WAITING...</span>
-                    </div>
-                    <div class="bingo-grid">
-                        ${generateDummyCells()}
-                    </div>
-                `;
-                container.appendChild(cardDiv);
-            });
-        }
-
-        // Helper to generate empty 5x5 layout visually
-        function generateDummyCells() {
-            let html = '';
-            for(let i=0; i<25; i++) {
-                if(i === 12) html += `<div class="cell free">★</div>`; // Center Free Space
-                else html += `<div class="cell">00</div>`; // Python will send real numbers later
-            }
-            return html;
-        }
-
-        // Listen for numbers from Python Bot
-        window.addEventListener('message', (event) => {
-            try {
-                const data = JSON.parse(event.data);
-                if(data.type === 'balance_update') {
-                    document.getElementById('user-balance').innerText = data.balance + " ETB";
-                }
-            } catch(e) {}
-        });
     </script>
 </body>
 </html>
